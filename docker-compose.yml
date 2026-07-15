@@ -1,0 +1,35 @@
+services:
+  app:
+    image: ${MGATE_IMAGE:-ghcr.io/akiiya/mgate-cloud}:${MGATE_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MGATE_MODE: prod
+      MGATE_HTTP_ADDR: :22880
+      MGATE_CONFIG: /config/config.yaml
+      MGATE_DB_DRIVER: mysql
+      MGATE_DB_DSN: mgate:${MYSQL_PASSWORD:?set MYSQL_PASSWORD}@tcp(mysql:3306)/mgate_cloud?charset=utf8mb4&collation=utf8mb4_unicode_ci
+      MGATE_APP_SECRET: ${MGATE_APP_SECRET:?set MGATE_APP_SECRET}
+    volumes:
+      - ${MGATE_DATA_DIR:-./data}/config:/config
+    ports:
+      - "127.0.0.1:${MGATE_PORT:-22880}:22880"
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: mgate_cloud
+      MYSQL_USER: mgate
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ${MGATE_DATA_DIR:-./data}/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
