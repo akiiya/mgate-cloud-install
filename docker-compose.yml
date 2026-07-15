@@ -12,6 +12,8 @@ services:
       MGATE_DB_DRIVER: mysql
       MGATE_DB_DSN: mgate:${MYSQL_PASSWORD:?set MYSQL_PASSWORD}@tcp(mysql:3306)/mgate_cloud?charset=utf8mb4&collation=utf8mb4_unicode_ci
       MGATE_APP_SECRET: ${MGATE_APP_SECRET:?set MGATE_APP_SECRET}
+      MGATE_GITHUB_REPO: akiiya/mgate-cloud-install
+      MGATE_UPDATE_APPLY_ENABLED: "false"
     volumes:
       - ${MGATE_DATA_DIR:-./data}/config:/config
     ports:
